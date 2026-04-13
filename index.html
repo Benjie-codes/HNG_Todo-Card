@@ -439,7 +439,7 @@
       id: "task-001",
       title: "Finalize Design System Tokens",
       description:
-        "Review the full spacing scale, audit color contrast ratios, and update all component-level CSS variables before the next sprint review.",
+        "",
       priority: "High",
       status: "In Progress",
       dueDate: new Date("2026-05-01T18:00:00Z"),
@@ -538,17 +538,15 @@
       render(state);
     });
 
-    // Edit button (stub — Stage 0)
     editBtn.addEventListener("click", () => {
       console.log("[todo] edit clicked for task:", task.id);
     });
 
-    // Delete button (stub — Stage 0)
     deleteBtn.addEventListener("click", () => {
       alert(`Delete task "${task.title}"?`);
     });
 
-    // Initial render
+    //Render state
     render(state);
   </script>
 </body>
