@@ -71,9 +71,13 @@ const task = {
     const state = {
       completed: false,
       status: task.status,
+      isCollapsed: false,
     };
 
     const statusControl = document.querySelector('[data-testid="test-todo-status-control"]');
+    const collSectionEl = document.querySelector('[data-testid="test-todo-collapsible-section"]');
+    const collToggleBtn = document.querySelector('[data-testid="test-todo-expand-toggle"]');
+    const collToggleLabel = collToggleBtn.querySelector('.expand-label');
 
     function slugify(str) {
       return str.toLowerCase().replace(/\s+/g, "-");
@@ -113,6 +117,48 @@ const task = {
       applyStatus(statusControl.value);
     });
 
+    // ── Description Collapse ──
+    function setCollapsedState(collapse) {
+      state.isCollapsed = collapse;
+      if (collapse) {
+        collSectionEl.className = 'collapsible-section is-collapsed';
+        collToggleBtn.setAttribute('aria-expanded', 'false');
+        collToggleLabel.textContent = 'Show more';
+      } else {
+        collSectionEl.className = 'collapsible-section is-expanded';
+        collToggleBtn.setAttribute('aria-expanded', 'true');
+        collToggleLabel.textContent = 'Show less';
+      }
+    }
+
+    function evaluateDescription() {
+      const text = task.description.trim();
+      const isLongChars = text.length > 120;
+
+      // Unrestrict to measure true height
+      collSectionEl.className = 'collapsible-section';
+      collSectionEl.style.maxHeight = 'none';
+      
+      const computedStyle = window.getComputedStyle(descEl);
+      const lineHeight = parseFloat(computedStyle.lineHeight) || 22.4; // fallback for 1.6 * .875rem (14px)
+      const realHeight = descEl.scrollHeight;
+      const isLongLines = realHeight > (lineHeight * 3 + 2);
+
+      collSectionEl.style.maxHeight = ''; // restore
+
+      if (isLongChars || isLongLines) {
+        collToggleBtn.style.display = 'inline-flex';
+        setCollapsedState(true);
+      } else {
+        collToggleBtn.style.display = 'none';
+        collSectionEl.className = 'collapsible-section'; // no clamping
+      }
+    }
+
+    collToggleBtn.addEventListener('click', function () {
+      setCollapsedState(!state.isCollapsed);
+    });
+
     // ── Edit Mode ──
     const editForm       = document.querySelector('[data-testid="test-todo-edit-form"]');
     const editTitleInput  = document.querySelector('[data-testid="test-todo-edit-title-input"]');
@@ -123,7 +169,14 @@ const task = {
     const titleError     = editForm.querySelector('.error-message');
     const descEl         = document.querySelector('[data-testid="test-todo-description"]');
     const priorityEl     = document.querySelector('[data-testid="test-todo-priority"]');
+    const priorityIndicatorEl = document.querySelector('[data-testid="test-todo-priority-indicator"]');
     const dueDateEl      = document.querySelector('[data-testid="test-todo-due-date"]');
+
+    function updatePriorityIndicator(priority) {
+      const key = priority.toLowerCase();
+      priorityIndicatorEl.className = 'priority-indicator priority-indicator--' + key;
+      priorityIndicatorEl.setAttribute('aria-label', 'Priority: ' + priority);
+    }
 
     function enterEditMode() {
       // Pre-populate fields with current displayed values
@@ -185,13 +238,17 @@ const task = {
       // Update displayed title
       titleEl.textContent = task.title;
 
-      // Update displayed description
+      // Update displayed description & evaluate collapse
       descEl.textContent = task.description;
+      evaluateDescription();
 
       // Update priority badge
       priorityEl.textContent = task.priority;
       priorityEl.className   = 'badge badge--' + task.priority.toLowerCase();
       priorityEl.setAttribute('aria-label', 'Priority: ' + task.priority);
+
+      // Update priority indicator dot
+      updatePriorityIndicator(task.priority);
 
       // Update due date display
       const opts = { month: 'short', day: '2-digit', year: 'numeric', timeZone: 'UTC' };
@@ -215,3 +272,4 @@ const task = {
 
     // Initial state
     applyStatus(task.status);
+    evaluateDescription();
