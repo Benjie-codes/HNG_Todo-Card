@@ -142,6 +142,45 @@
     .badge--in-progress { color: var(--status-inprog-text);  background: var(--status-inprog-bg); }
     .badge--done        { color: var(--status-done-text);    background: var(--status-done-bg); }
 
+    /* Status control */
+    .status-control {
+      font-family: var(--font-ui);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      line-height: 1.4;
+      padding: 2px var(--space-sm);
+      border-radius: var(--radius-badge);
+      border: var(--border-thin);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      padding-right: calc(var(--space-md) + 4px);
+      transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .status-control--pending {
+      color: var(--status-pending-text);
+      background-color: var(--status-pending-bg);
+      border-color: var(--status-pending-bg);
+    }
+
+    .status-control--in-progress {
+      color: var(--status-inprog-text);
+      background-color: var(--status-inprog-bg);
+      border-color: var(--status-inprog-bg);
+    }
+
+    .status-control--done {
+      color: var(--status-done-text);
+      background-color: var(--status-done-bg);
+      border-color: var(--status-done-bg);
+    }
+
     .toggle-label {
       display: flex;
       align-items: center;
@@ -296,6 +335,92 @@
       opacity: 0.6;
     }
 
+    /* ── Edit Mode ── */
+    .edit-form {
+      display: none;
+    }
+
+    .todo-card--editing .card-header,
+    .todo-card--editing .card-body,
+    .todo-card--editing .card-footer {
+      display: none;
+    }
+
+    .todo-card--editing .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .edit-form-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .edit-form-field > .edit-label {
+      font-family: var(--font-ui);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .edit-form input[type="text"],
+    .edit-form input[type="date"],
+    .edit-form textarea,
+    .edit-form select {
+      font-family: var(--font-ui);
+      font-size: 0.875rem;
+      padding: var(--space-sm);
+      border: var(--border-thin);
+      border-radius: var(--radius-button);
+      background: var(--color-bg);
+      color: var(--color-text-primary);
+      width: 100%;
+      transition: border-color 0.15s ease;
+    }
+
+    .edit-form input[type="text"]:focus,
+    .edit-form input[type="date"]:focus,
+    .edit-form textarea:focus,
+    .edit-form select:focus {
+      border-color: var(--color-accent);
+    }
+
+    .edit-form textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.6;
+    }
+
+    .edit-form-actions {
+      display: flex;
+      gap: var(--space-sm);
+      justify-content: flex-end;
+      padding-top: var(--space-sm);
+    }
+
+    .action-btn--save {
+      background: var(--color-accent);
+      color: var(--color-bg);
+      border-color: var(--color-accent);
+    }
+
+    .action-btn--save:hover {
+      background: var(--color-accent-dark);
+      border-color: var(--color-accent-dark);
+    }
+
+    .error-message {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      color: #CC0000;
+    }
+
+    .error-message:empty {
+      display: none;
+    }
+
 
     @media (max-width: 479px) {
       [data-testid="test-todo-card"] {
@@ -345,6 +470,15 @@
             aria-label="Status: In Progress"
             role="status"
           >In Progress</span>
+          <select
+            data-testid="test-todo-status-control"
+            class="status-control status-control--in-progress"
+            aria-label="Change status"
+          >
+            <option value="Pending">Pending</option>
+            <option value="In Progress" selected>In Progress</option>
+            <option value="Done">Done</option>
+          </select>
         </div>
 
         <label for="toggle-task-001" class="toggle-label">
@@ -380,6 +514,60 @@
           <li data-testid="test-todo-tag-design">Design</li>
         </ul>
       </div>
+
+      <form class="edit-form" data-testid="test-todo-edit-form" novalidate>
+        <div class="edit-form-field">
+          <label class="edit-label" for="edit-title">Title</label>
+          <input
+            type="text"
+            id="edit-title"
+            data-testid="test-todo-edit-title-input"
+          />
+          <span class="error-message" aria-live="polite"></span>
+        </div>
+
+        <div class="edit-form-field">
+          <label class="edit-label" for="edit-description">Description</label>
+          <textarea
+            id="edit-description"
+            data-testid="test-todo-edit-description-input"
+          ></textarea>
+        </div>
+
+        <div class="edit-form-field">
+          <label class="edit-label" for="edit-priority">Priority</label>
+          <select
+            id="edit-priority"
+            data-testid="test-todo-edit-priority-select"
+          >
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+
+        <div class="edit-form-field">
+          <label class="edit-label" for="edit-due-date">Due Date</label>
+          <input
+            type="date"
+            id="edit-due-date"
+            data-testid="test-todo-edit-due-date-input"
+          />
+        </div>
+
+        <div class="edit-form-actions">
+          <button
+            type="submit"
+            data-testid="test-todo-save-button"
+            class="action-btn action-btn--save"
+          >Save</button>
+          <button
+            type="button"
+            data-testid="test-todo-cancel-button"
+            class="action-btn"
+          >Cancel</button>
+        </div>
+      </form>
 
       <footer class="card-footer">
         <div class="card-dates">
@@ -507,39 +695,143 @@
 
     const state = {
       completed: false,
+      status: task.status,
     };
+
+    const statusControl = document.querySelector('[data-testid="test-todo-status-control"]');
 
     function slugify(str) {
       return str.toLowerCase().replace(/\s+/g, "-");
     }
 
-    function render({ completed }) {
-      // Checkbox
-      checkbox.checked = completed;
+    function applyStatus(newStatus) {
+      state.status   = newStatus;
+      task.status    = newStatus;
+      state.completed = (newStatus === 'Done');
+
+      // Checkbox sync
+      checkbox.checked = state.completed;
 
       // Title strike-through
-      card.classList.toggle("todo-card--completed", completed);
+      card.classList.toggle('todo-card--completed', state.completed);
 
-      // Status badge
-      statusEl.textContent = completed ? "Done" : task.status;
-      statusEl.className = `badge badge--status ${
-        completed ? "badge--done" : `badge--${slugify(task.status)}`
-      }`;
-      statusEl.setAttribute(
-        "aria-label",
-        `Status: ${completed ? "Done" : task.status}`
-      );
+      // Status badge display
+      statusEl.textContent = newStatus;
+      statusEl.className   = 'badge badge--' + slugify(newStatus);
+      statusEl.setAttribute('aria-label', 'Status: ' + newStatus);
+
+      // Status control sync
+      statusControl.value     = newStatus;
+      statusControl.className = 'status-control status-control--' + slugify(newStatus);
+
+      // Card body opacity
+      card.classList.toggle('todo-card--completed', state.completed);
     }
 
-
-    // Checkbox toggle
-    checkbox.addEventListener("change", () => {
-      state.completed = checkbox.checked;
-      render(state);
+    // Checkbox → Status
+    checkbox.addEventListener('change', function () {
+      applyStatus(checkbox.checked ? 'Done' : 'Pending');
     });
 
-    editBtn.addEventListener("click", () => {
-      console.log("[todo] edit clicked for task:", task.id);
+    // Status Control → Checkbox + Display
+    statusControl.addEventListener('change', function () {
+      applyStatus(statusControl.value);
+    });
+
+    // ── Edit Mode ──
+    const editForm       = document.querySelector('[data-testid="test-todo-edit-form"]');
+    const editTitleInput  = document.querySelector('[data-testid="test-todo-edit-title-input"]');
+    const editDescInput   = document.querySelector('[data-testid="test-todo-edit-description-input"]');
+    const editPrioritySelect = document.querySelector('[data-testid="test-todo-edit-priority-select"]');
+    const editDueDateInput   = document.querySelector('[data-testid="test-todo-edit-due-date-input"]');
+    const cancelBtn      = document.querySelector('[data-testid="test-todo-cancel-button"]');
+    const titleError     = editForm.querySelector('.error-message');
+    const descEl         = document.querySelector('[data-testid="test-todo-description"]');
+    const priorityEl     = document.querySelector('[data-testid="test-todo-priority"]');
+    const dueDateEl      = document.querySelector('[data-testid="test-todo-due-date"]');
+
+    function enterEditMode() {
+      // Pre-populate fields with current displayed values
+      editTitleInput.value    = titleEl.textContent.trim();
+      editDescInput.value     = descEl.textContent.trim();
+      editPrioritySelect.value = task.priority;
+
+      const d    = task.dueDate;
+      const yyyy = d.getUTCFullYear();
+      const mm   = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const dd   = String(d.getUTCDate()).padStart(2, '0');
+      editDueDateInput.value = `${yyyy}-${mm}-${dd}`;
+
+      // Clear previous errors
+      titleError.textContent = '';
+
+      // Enter edit mode
+      card.classList.add('todo-card--editing');
+
+      // Focus the title input
+      editTitleInput.focus();
+    }
+
+    function exitEditMode() {
+      card.classList.remove('todo-card--editing');
+      editBtn.focus();
+    }
+
+    // Clear title error on input
+    editTitleInput.addEventListener('input', function () {
+      if (editTitleInput.value.trim()) {
+        titleError.textContent = '';
+      }
+    });
+
+    // Edit button opens edit mode
+    editBtn.addEventListener('click', enterEditMode);
+
+    // Cancel discards changes
+    cancelBtn.addEventListener('click', exitEditMode);
+
+    // Save validates & persists
+    editForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const newTitle = editTitleInput.value.trim();
+      if (!newTitle) {
+        titleError.textContent = 'Title cannot be empty';
+        editTitleInput.focus();
+        return;
+      }
+
+      // Update task data
+      task.title       = newTitle;
+      task.description = editDescInput.value.trim();
+      task.priority    = editPrioritySelect.value;
+      task.dueDate     = new Date(editDueDateInput.value + 'T18:00:00Z');
+
+      // Update displayed title
+      titleEl.textContent = task.title;
+
+      // Update displayed description
+      descEl.textContent = task.description;
+
+      // Update priority badge
+      priorityEl.textContent = task.priority;
+      priorityEl.className   = 'badge badge--' + task.priority.toLowerCase();
+      priorityEl.setAttribute('aria-label', 'Priority: ' + task.priority);
+
+      // Update due date display
+      const opts = { month: 'short', day: '2-digit', year: 'numeric', timeZone: 'UTC' };
+      dueDateEl.textContent = 'Due ' + task.dueDate.toLocaleDateString('en-US', opts);
+      dueDateEl.setAttribute('datetime', task.dueDate.toISOString());
+      timeEl.setAttribute('datetime', task.dueDate.toISOString());
+
+      // Update button aria-labels to reflect new title
+      editBtn.setAttribute('aria-label', 'Edit task: ' + task.title);
+      deleteBtn.setAttribute('aria-label', 'Delete task: ' + task.title);
+
+      // Refresh countdown
+      updateTimeRemaining();
+
+      exitEditMode();
     });
 
     deleteBtn.addEventListener("click", () => {
