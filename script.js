@@ -22,57 +22,59 @@ const task = {
     const editBtn   = document.querySelector('[data-testid="test-todo-edit-button"]');
     const deleteBtn = document.querySelector('[data-testid="test-todo-delete-button"]');
 
-    function getTimeRemaining(dueDate) {
-      const now = Date.now();
-      const due = new Date(dueDate).getTime();
-      const diffMs = due - now;
-      const diffMinutes = Math.round(diffMs / 60000);
-      const diffHours   = Math.round(diffMs / 3600000);
-      const diffDays    = Math.round(diffMs / 86400000);
-
-      if (diffMs <= 0) {
-        const overMs    = Math.abs(diffMs);
-        const overMins  = Math.round(overMs / 60000);
-        const overHours = Math.round(overMs / 3600000);
-        const overDays  = Math.round(overMs / 86400000);
-
-        if (overMins  < 2) return "Due now!";
-        if (overHours < 1) return `Overdue by ${overMins} minute${overMins > 1 ? "s" : ""}`;
-        if (overDays  < 1) return `Overdue by ${overHours} hour${overHours > 1 ? "s" : ""}`;
-        return `Overdue by ${overDays} day${overDays > 1 ? "s" : ""}`;
-      }
-
-      if (diffMinutes < 2)  return "Due now!";
-      if (diffHours   < 1)  return `Due in ${diffMinutes} minute${diffMinutes > 1 ? "s" : ""}`;
-      if (diffHours   < 24) return `Due in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
-      if (diffDays   === 1) return "Due tomorrow";
-      return `Due in ${diffDays} days`;
-    }
-
-    function getTimeColor(text) {
-      if (text.startsWith("Overdue")) return "#CC0000";
-      if (text === "Due now!")        return "var(--color-accent)";
-      if (text.includes("minute"))    return "var(--color-accent)";
-      if (text.includes("hour"))      return "var(--color-text-secondary)";
-      if (text === "Due tomorrow")    return "var(--color-text-secondary)";
-      return "var(--color-text-muted)";
-    }
-
-    function updateTimeRemaining() {
-      const text = getTimeRemaining(task.dueDate);
-      timeEl.textContent = text;
-      timeEl.style.color = getTimeColor(text);
-    }
-
-    // Initial render + auto-refresh every 60s
-    updateTimeRemaining();
-    setInterval(updateTimeRemaining, 60000);
-
     const state = {
       completed: false,
       status: task.status,
       isCollapsed: false,
     };
+
+    const overdueIndicator = document.querySelector('[data-testid="test-todo-overdue-indicator"]');
+
+    function updateTimeRemaining() {
+      if (state.status === 'Done') {
+        timeEl.textContent = "Completed";
+        timeEl.className = "";
+        overdueIndicator.style.display = "none";
+        return;
+      }
+
+      const now = Date.now();
+      const due = new Date(task.dueDate).getTime();
+      const diffMs = due - now;
+
+      const absMs = Math.abs(diffMs);
+      const minutes = Math.floor(absMs / 60000);
+      const hours = Math.floor(absMs / 3600000);
+      const days = Math.floor(hours / 24);
+
+      let text = "";
+      let isOverdue = false;
+
+      if (diffMs < 0) {
+        isOverdue = true;
+        if (hours < 1) text = `Overdue by ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        else if (hours <= 24) text = `Overdue by ${hours} hour${hours !== 1 ? 's' : ''}`;
+        else text = `Overdue by ${days} day${days !== 1 ? 's' : ''}`;
+      } else {
+        if (hours < 1) text = `Due in ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        else if (hours <= 48) text = `Due in ${hours} hour${hours !== 1 ? 's' : ''}`;
+        else text = `Due in ${days} days`;
+      }
+
+      timeEl.textContent = text;
+
+      if (isOverdue) {
+        timeEl.className = "time-remaining--overdue";
+        overdueIndicator.style.display = "inline-flex";
+      } else {
+        timeEl.className = "";
+        overdueIndicator.style.display = "none";
+      }
+    }
+
+    // Initial render + auto-refresh every 45s
+    updateTimeRemaining();
+    setInterval(updateTimeRemaining, 45000);
 
     const statusControl = document.querySelector('[data-testid="test-todo-status-control"]');
     const collSectionEl = document.querySelector('[data-testid="test-todo-collapsible-section"]');
@@ -103,8 +105,9 @@ const task = {
       statusControl.value     = newStatus;
       statusControl.className = 'status-control status-control--' + slugify(newStatus);
 
-      // Card body opacity
+      // Card body visually completed & check time display updates
       card.classList.toggle('todo-card--completed', state.completed);
+      updateTimeRemaining();
     }
 
     // Checkbox → Status

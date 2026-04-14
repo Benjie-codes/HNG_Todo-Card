@@ -164,6 +164,15 @@ body {
     gap: var(--space-xs);
 }
 
+/* Overdue logic elements */
+.badge--overdue {
+    color: var(--priority-high-text);
+    background: var(--priority-high-bg);
+}
+.time-remaining--overdue {
+    color: var(--priority-high-text);
+}
+
 /* Status badges */
 .badge--pending {
     color: var(--status-pending-text);
@@ -424,13 +433,13 @@ body {
     border-radius: 2px;
 }
 
-.todo-card--completed [data-testid="test-todo-title"] {
-    text-decoration: line-through;
-    color: var(--color-done-strike);
+.todo-card--completed [data-testid="test-todo-title"],
+.todo-card--completed [data-testid="test-todo-description"] {
+    color: var(--color-text-muted);
 }
 
-.todo-card--completed .card-body {
-    opacity: 0.6;
+.todo-card--completed [data-testid="test-todo-title"] {
+    text-decoration: line-through;
 }
 
 /* ── Edit Mode ── */
